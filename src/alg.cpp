@@ -1,95 +1,75 @@
 // Copyright 2021 NNTU-CS
+#ifndef INCLUDE_TPQUEUE_H_
+#define INCLUDE_TPQUEUE_H_
+#include <cassert>
+
 template<typename T>
-class TPQueue
-{
-  // Сюда помещается описание структуры "Очередь с приоритетами"
-    struct ITEM
-    {
-        T data;
-        ITEM* next;
-    };
-public:
-    TPQueue() :head(nullptr), tail(nullptr) {}
-    ~TPQueue();
-    void push(const T&);
-    T pop();
-    void print() const;
-private:
-    TPQueue::ITEM* create(const T&);
-    ITEM* head;
-    ITEM* tail;
-};
-template<typename T>
-typename TPQueue<T>::ITEM* TPQueue<T>::create(const T& data)
-{
+class TPQueue {
+ private:
+  struct ITEM {
+    T data;
+    ITEM* next;
+    ITEM* prev;
+  };
+  ITEM* head;
+  ITEM* tail;
+  TPQueue::ITEM* create(const T& data, ITEM*prev) {
     ITEM* item = new ITEM;
     item->data = data;
     item->next = nullptr;
+    item->prev = prev;
     return item;
-}
-template<typename T>
-TPQueue<T>::~TPQueue()
-{
+  }
+
+ public:
+  TPQueue() :head(nullptr), tail(nullptr) {}
+  ~TPQueue() {
     while (head)
-        pop();
-}
-template<typename T>
-void TPQueue<T>::push(const T& data)
-{
-        if (tail && head)
-        {
-            ITEM* begin = head;
-            ITEM* newItem = create(data);
-            if ((head->data).prior < data.prior) {
-                newItem->next = head;
-                head = newItem;
-           }
-            else {
-                while (begin->next != nullptr && (begin->next->data.prior < data.prior)) {
-                    begin = begin->next;
-                }
-                newItem->next = begin->next;
-                begin->next = newItem;
-            }
-        }
+      pop();
+  }
+
+  void push(const T& data) {
+    if (tail && head) {
+      ITEM* current = tail;
+
+      while (current && data.prior > (current->data).prior) {
+        current = current->prev;
+      }
+      if (current) {
+        ITEM* temp = current->next;
+        current->next = create(data, current);
+        current = current->next;
+        current->next = temp;
+        if (temp)
+          temp->prev = current;
         else
-        {
-            head = create(data);
-            head->next = tail;
-            tail = head;
-        }
-}
-template<typename T>
-T TPQueue<T>::pop()
-{
-    if (head)
-    {
-        ITEM* temp = head->next;
-        T data = head->data;
-        delete head;
-        head = temp;
-        return data;
+          tail = current;
+      } else {
+        current = create(data, nullptr);
+        current->next = head;
+        head->prev = current;
+        head = current;
+      }
+    } else {
+      head = create(data, nullptr);
+      tail = head;
     }
-    else
-    {
-        T data;  data.ch = '0';  data.prior = '0';
-        return data;
-    }
-}
-template<typename T>
-void TPQueue<T>::print() const
-{
-    ITEM* temp = head;
-    while (temp)
-    {
-        std::cout << temp->data << " ";
-        temp = temp->next;
-    }
-    std::cout << std::endl;
-}
-struct SYM
-{
-	char ch;
-	int  prior;
-  };
-  };
+  }
+
+  T pop() {
+      assert(head);
+      ITEM* temp = head->next;
+      T data = head->data;
+      if (temp)
+        temp->prev = nullptr;
+      delete head;
+      head = temp;
+      return data;
+  }
+};
+
+struct SYM {
+  char ch;
+  int  prior;
+};
+#endif // INCLUDE_TPQUEUE_H_
