@@ -9,6 +9,7 @@ class TPQueue {
     T data;
     ITEM *next;
   };
+  
  private:
   ITEM *head;
   ITEM *tail;
@@ -18,6 +19,7 @@ class TPQueue {
     t->next = nullptr;
     return t;
   }
+  
  public:
   TPQueue() :head(nullptr), tail(nullptr) {}
   ~TPQueue() {
